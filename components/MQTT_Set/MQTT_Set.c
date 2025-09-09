@@ -8,12 +8,13 @@
 #include "SHT20.h"
 #include "Camear.h"
 #include "JDQ.h"
+#include "mbedtls/base64.h"
 #define TAG                    "MQTT_CLIENT"
-#define MQTT_BROKER_URI        "mqtt://192.168.248.70"
+#define MQTT_BROKER_URI        "mqtt://8.134.185.186"
 #define MQTT_BROKER_PORT       1883
-#define MQTT_CLIENT_ID         "client_id1515"
-#define MQTT_USERNAME          "my_username21"
-#define MQTT_PASSWORD          "my_password"
+#define MQTT_CLIENT_ID         "esp32s3"
+#define MQTT_USERNAME          "esp32s3"
+#define MQTT_PASSWORD          ""
 #define MQTT_TOPIC_SENSOR      "test/ESP-IDF/SENSOR_DATA"
 #define MQTT_TOPIC_COMMAND     "test/ESP-IDF/COMMAND"
 #define MQTT_TOPIC_CAM         "test/ESP-IDF/CAM"
@@ -163,8 +164,37 @@ static void publish_sensor_data(void)
             //ESP_LOGI(TAG, "Published: %s", json);
         }
 
-        int msg_cam = esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_CAM, (const char *)picture_data->buf, picture_data->len, 0, 0);
-        //ESP_LOGI(TAG, "Published: %s", (const char *)picture_data);
+        // 检查picture_data是否有效
+        if (picture_data && picture_data->buf && picture_data->len > 0) {
+            // 为base64编码结果分配内存
+            // base64编码会将3字节数据转换为4字节，所以需要原始长度的约1.33倍空间
+            size_t base64_len = ((picture_data->len + 2) / 3) * 4 + 1; // +1 用于终止符
+            uint8_t *base64_buf = (uint8_t *)malloc(base64_len);
+            
+            if (base64_buf) {
+                // 进行base64编码
+                size_t out_len = 0;
+                int result = mbedtls_base64_encode(base64_buf, base64_len, &out_len, 
+                                                  picture_data->buf, picture_data->len);
+                
+                if (result == 0) { // 编码成功
+                    // 发布base64编码后的图像数据
+                    int msg_cam = esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_CAM, 
+                                                         (const char *)base64_buf, out_len, 0, 0);
+                    
+                    if (msg_cam < 0) {
+                        ESP_LOGE(TAG, "Camera publish failed: %d", msg_cam);
+                    }
+                } else {
+                    ESP_LOGE(TAG, "Base64 encoding failed: %d", result);
+                }
+                
+                // 释放base64缓冲区
+                free(base64_buf);
+            } else {
+                ESP_LOGE(TAG, "Failed to allocate memory for base64 encoding");
+            }
+        }
     }
 }
 
@@ -192,6 +222,6 @@ void mqtt_task(void *pvParameters)
 
         /* 每 0.1 秒发布一次数据 */
         publish_sensor_data();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

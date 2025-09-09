@@ -39,6 +39,7 @@ void wifi_event_handler(void* event_handler_arg,esp_event_base_t event_base,int3
                 ESP_LOGI("IP_EVENT", "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
 //                xSemaphoreGive(wifi_connected_semaphore);
                 xTaskCreatePinnedToCore(mqtt_task, "mqtt_task", 4096, NULL, 5, NULL, 1);
+
                 break;
             // Handle other IP events as needed
         }
