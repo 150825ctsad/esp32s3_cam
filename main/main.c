@@ -81,7 +81,6 @@ void app_main(void) {
     xTaskCreatePinnedToCore(relay_task, "Relay", 2048, NULL, 5, NULL, 0); // CPU0
     xTaskCreatePinnedToCore(lcd_display_task, "LCD", 8192, NULL, 5, NULL, 1); // CPU1
     
-    // 主循环可以空着，或者处理其他高优先级任务
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }

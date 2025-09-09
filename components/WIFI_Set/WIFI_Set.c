@@ -8,8 +8,8 @@
 #include "freertos/semphr.h"
 #include <inttypes.h>
 
-#define SSID "iQOO Neo9 Pro"
-#define PASSWORD "0d000721"
+#define SSID "SUMMER"
+#define PASSWORD "00000000"
 
 //static SemaphoreHandle_t wifi_connected_semaphore = NULL;
 

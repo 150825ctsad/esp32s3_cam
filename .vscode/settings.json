@@ -1,11 +1,11 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
-  "idf.espIdfPathWin": "d:\\Softwares\\ESP\\esp\\v5.4.1\\esp-idf",
-  "idf.pythonInstallPath": "d:\\Softwares\\ESP\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.espIdfPathWin": "C:\\Users\\25761\\esp\\v5.4.1\\esp-idf",
+  "idf.pythonInstallPath": "C:\\Users\\25761\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ],
-  "idf.toolsPathWin": "D:\\Softwares\\ESP\\.espressif",
+  "idf.toolsPathWin": "C:\\Users\\25761\\.espressif",
   "idf.customExtraVars": {
     "IDF_TARGET": "esp32s3"
   },
@@ -16,7 +16,7 @@
     "--compile-commands-dir=${workspaceFolder}\\build"
   ],
   "idf.flashType": "UART",
-  "idf.portWin": "COM5",
+  "idf.portWin": "COM10",
   "files.associations": {
     "adc_cali.h": "c",
     "gpio.h": "c",

@@ -56,7 +56,7 @@ camera_config_t esp32cam_config = {
     .xclk_freq_hz = 40000000,
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0,
-    .pixel_format = PIXFORMAT_JPEG,//PIXFORMAT_JPEG,
+    .pixel_format = PIXFORMAT_RGB565,//PIXFORMAT_JPEG,
     .frame_size = FRAMESIZE_240X240,
     .jpeg_quality = 12, // 0-63，数值越小质量越高
     .fb_count = 2       // 如果大于1，i2s将以连续模式运行。仅与jpeg一起使用
@@ -81,11 +81,18 @@ uint16_t Camearinit(void){
  
   // 获取传感器指针
   sensor_t * s = esp_camera_sensor_get();
-  // 传感器初始设置：翻转图像、调整亮度和饱和度 这里可以不更改
-  s->set_vflip(s, 1); // 翻转图像垂直方向
-  s->set_brightness(s, 1); // 调整亮度
-  s->set_saturation(s, 0); // lower the saturation
 
+    s->set_brightness(s, 1);     // 亮度（-2 到 2）
+    s->set_contrast(s, 0);       // 对比度（-2 到 2）
+    s->set_saturation(s, -1);     // 饱和度（-2 到 2）
+    s->set_sharpness(s, 0);      // 锐度（-2 到 2）
+    s->set_aec_value(s, 800);    // 曝光值（0-1200）
+    s->set_raw_gma(s, 1);        // RAW GMA（0 关闭，1 开启）
+    s->set_lenc(s, 1);           // 镜头校正（0 关闭，1 开启）
+    s->set_hmirror(s, 1);        // 水平镜像（0 关闭，1 开启）
+    s->set_vflip(s, 1);          // 垂直翻转（0 关闭，1 开启）
+
+  
   printf("Camera configuration complete!");
   return 1; // 返回1表示成功
 }
@@ -94,7 +101,7 @@ void Camera_app(void)
 {
     camera_fb_t *fb = esp_camera_fb_get();
     if (!fb) { printf("fb NULL\n"); return; }
-    if (fb->format != PIXFORMAT_JPEG) 
+    if (fb->format != PIXFORMAT_RGB565) 
     {
         printf("Unexpected format: %d\n", fb->format);
         esp_camera_fb_return(fb);
