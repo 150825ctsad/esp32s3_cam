@@ -1,0 +1,43 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPathWin": "d:\\Softwares\\ESP\\esp\\v5.4.1\\esp-idf",
+  "idf.pythonInstallPath": "d:\\Softwares\\ESP\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.openOcdConfigs": [
+    "board/esp32s3-builtin.cfg"
+  ],
+  "idf.toolsPathWin": "D:\\Softwares\\ESP\\.espressif",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32s3"
+  },
+  "clangd.path": "d:\\esp32\\esp32_2\\tools\\tools\\esp-clang\\esp-19.1.2_20250312\\esp-clang\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=d:\\esp32\\esp32_2\\tools\\tools\\xtensa-esp-elf\\esp-14.2.0_20241119\\xtensa-esp-elf\\bin\\xtensa-esp32-elf-gcc.exe",
+    "--compile-commands-dir=${workspaceFolder}\\build"
+  ],
+  "idf.flashType": "UART",
+  "idf.portWin": "COM5",
+  "files.associations": {
+    "adc_cali.h": "c",
+    "gpio.h": "c",
+    "freertos.h": "c",
+    "stdio.h": "c",
+    "camear.h": "c",
+    "esp_psram.h": "c",
+    "lcd_set.h": "c",
+    "compare": "c",
+    "cstdint": "c",
+    "i2c_master.h": "c",
+    "esp_err.h": "c",
+    "i2c.h": "c",
+    "tsl2584.h": "c",
+    "stdlib.h": "c",
+    "wifi_set.h": "c",
+    "sht20.h": "c",
+    "mqtt_client.h": "c",
+    "esp_log.h": "c",
+    "cjson.h": "c",
+    "mqtt_set.h": "c",
+    "esp_camera.h": "c"
+  }
+}
