@@ -39,5 +39,7 @@
     "cjson.h": "c",
     "mqtt_set.h": "c",
     "esp_camera.h": "c"
-  }
+  },
+  "trae.tab.enableRename": false,
+  "trae.tab.enableAutoImport": false
 }

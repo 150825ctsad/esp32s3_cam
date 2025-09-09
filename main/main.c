@@ -12,7 +12,6 @@
 #include "TSL2584.h"
 #include "I2C.h"
 #include "WIFI_Set.h"
-
 // 声明全局变量
 
 
@@ -30,7 +29,6 @@ void adc_task(void *pvParameters) {
 void camera_task(void *pvParameters) {
     while (1) {
         Camera_app(); // 处理摄像头相关功能
-        vTaskDelay(pdMS_TO_TICKS(34)); // 每秒执行一次
     }
 }
 

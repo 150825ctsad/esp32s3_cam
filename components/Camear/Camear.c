@@ -8,6 +8,7 @@
 #include "esp_psram.h"
 #include "lcd_set.h"
 #include "spi_set.h"
+#include "jpeg_decoder.h"
 //WROVER-KIT PIN Map
 #define CAM_PIN_PWDN    -1 //power down is not used
 #define CAM_PIN_RESET   -1 //software reset will be performed
@@ -56,9 +57,9 @@ camera_config_t esp32cam_config = {
     .xclk_freq_hz = 40000000,
     .ledc_timer = LEDC_TIMER_0,
     .ledc_channel = LEDC_CHANNEL_0,
-    .pixel_format = PIXFORMAT_RGB565,//PIXFORMAT_JPEG,
+    .pixel_format = PIXFORMAT_JPEG,//PIXFORMAT_JPEG,PIXFORMAT_RGB565
     .frame_size = FRAMESIZE_240X240,
-    .jpeg_quality = 12, // 0-63，数值越小质量越高
+    .jpeg_quality = 5, // 0-63，数值越小质量越高
     .fb_count = 2       // 如果大于1，i2s将以连续模式运行。仅与jpeg一起使用
 };
 
@@ -81,16 +82,50 @@ uint16_t Camearinit(void){
  
   // 获取传感器指针
   sensor_t * s = esp_camera_sensor_get();
-
-    s->set_brightness(s, 1);     // 亮度（-2 到 2）
-    s->set_contrast(s, 0);       // 对比度（-2 到 2）
-    s->set_saturation(s, -1);     // 饱和度（-2 到 2）
-    s->set_sharpness(s, 0);      // 锐度（-2 到 2）
-    s->set_aec_value(s, 800);    // 曝光值（0-1200）
-    s->set_raw_gma(s, 1);        // RAW GMA（0 关闭，1 开启）
-    s->set_lenc(s, 1);           // 镜头校正（0 关闭，1 开启）
-    s->set_hmirror(s, 1);        // 水平镜像（0 关闭，1 开启）
-    s->set_vflip(s, 1);          // 垂直翻转（0 关闭，1 开启）
+    
+    s->set_brightness(s, 0);        // 亮度(-2到2)，0为默认值
+    
+    s->set_contrast(s, 2);          // 对比度(-2到2)，增加对比度使图像更清晰
+    s->set_saturation(s, 2);        // 饱和度(-2到2)，增加饱和度使颜色更鲜艳
+    s->set_sharpness(s, 2);         // 锐度(-2到2)，增加锐度使细节更清晰
+    
+    s->set_denoise(s, 1);           // 降噪级别(0-3)，1为轻度降噪，平衡画质和细节
+    
+    // 曝光控制设置
+    s->set_exposure_ctrl(s, 1);     // 启用自动曝光控制
+    
+    s->set_aec2(s, 1);              // 启用高级曝光控制
+    
+    s->set_ae_level(s, 1);          // 曝光补偿(-2到2)，0为默认
+    
+    s->set_aec_value(s, 1200);       // 曝光值(0-1200)，适中值，可根据环境调整
+    
+    // 增益控制设置
+    s->set_gain_ctrl(s, 1);         // 启用自动增益控制
+    
+    s->set_gainceiling(s, GAINCEILING_2X); // 增益上限，设为2X以减少噪点
+    
+    // 白平衡设置
+    s->set_whitebal(s, 1);          // 启用自动白平衡
+    
+    s->set_awb_gain(s, 1);          // 启用自动白平衡增益
+    
+    s->set_wb_mode(s, 0);           // 白平衡模式(0-4)，0为自动模式
+    
+    // 图像增强和校正
+    s->set_dcw(s, 1);               // 启用动态对比度增强
+    
+    s->set_bpc(s, 1);               // 启用坏像素校正
+    
+    s->set_wpc(s, 1);               // 启用白平衡校正
+    
+    s->set_raw_gma(s, 1);           // 启用RAW数据伽马校正
+    
+    s->set_lenc(s, 1);              // 启用镜头畸变校正
+    
+    // 图像方向设置(根据实际安装方向调整)
+    s->set_hmirror(s, 1);           // 水平镜像(0关闭，1开启)
+    s->set_vflip(s, 1);             // 垂直翻转(0关闭，1开启)
 
   
   printf("Camera configuration complete!");
@@ -99,24 +134,75 @@ uint16_t Camearinit(void){
 
 void Camera_app(void)
 {
+    // 1. 获取摄像头帧缓冲
     camera_fb_t *fb = esp_camera_fb_get();
-    if (!fb) { printf("fb NULL\n"); return; }
-    if (fb->format != PIXFORMAT_RGB565) 
+    if (!fb) { 
+        printf("fb NULL\n"); 
+        return; 
+    }
+    
+    // 2. 检查是否为 JPEG 格式
+    if (fb->format != PIXFORMAT_JPEG) 
     {
         printf("Unexpected format: %d\n", fb->format);
         esp_camera_fb_return(fb);
         return;
     }
 
-    draw_area_t draw_area = 
-    {
-        .x_start = 0,  .y_start = 0,
-        .x_end   = 239,.y_end   = 239,   // 坐标修正
-        .data    = (uint16_t*)fb->buf
+    // 3. 定义 JPEG 解码配置
+    esp_jpeg_image_cfg_t jpeg_cfg = {
+        .indata = fb->buf,                     // 输入 JPEG 数据
+        .indata_size = fb->len,                // 输入数据大小
+        .out_format = JPEG_IMAGE_FORMAT_RGB565, // 输出格式为 RGB565
+        .out_scale = JPEG_IMAGE_SCALE_0,       // 不缩放
+        .flags.swap_color_bytes = 1,           // 不交换颜色字节
+        .advanced.working_buffer = NULL,       // 让库自动分配工作缓冲区
+        .advanced.working_buffer_size = 0      // 自动计算工作缓冲区大小
     };
-    picture_data = fb;
-    // 画图之前：不要任何 printf
+
+    // 4. 获取图像信息，用于分配输出缓冲区
+    esp_jpeg_image_output_t img_info;
+    if (esp_jpeg_get_image_info(&jpeg_cfg, &img_info) != ESP_OK) {
+        printf("Failed to get JPEG image info\n");
+        esp_camera_fb_return(fb);
+        return;
+    }
+
+    // 5. 分配输出缓冲区
+    uint8_t *out_buf = (uint8_t *)heap_caps_malloc(img_info.output_len, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    if (!out_buf) {
+        printf("Failed to allocate output buffer\n");
+        esp_camera_fb_return(fb);
+        return;
+    }
+    
+    // 6. 设置输出缓冲区
+    jpeg_cfg.outbuf = out_buf;
+    jpeg_cfg.outbuf_size = img_info.output_len;
+
+    // 7. 解码 JPEG 图像
+    if (esp_jpeg_decode(&jpeg_cfg, &img_info) != ESP_OK) {
+        printf("Failed to decode JPEG image\n");
+        free(out_buf);
+        esp_camera_fb_return(fb);
+        return;
+    }
+
+    // 8. 准备绘制区域
+    draw_area_t draw_area = {
+        .x_start = 0,  
+        .y_start = 0,
+        .x_end   = 239, 
+        .y_end   = 239,   // 坐标修正为 240x240 LCD 尺寸
+        .data    = (uint16_t*)out_buf  // 解码后的 RGB565 数据
+    };
+
+    picture_data = fb;  // 保存图像数据指针
+    
+    // 9. 显示图像
     draw(&draw_area);
 
+    // 10. 清理资源
+    free(out_buf);
     esp_camera_fb_return(fb);
 }
