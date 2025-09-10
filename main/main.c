@@ -67,18 +67,18 @@ void app_main(void) {
     }
     
     // 初始化各个外设
-    TEST_ADC_Init();
+    //TEST_ADC_Init();
     sth20_init(sth_dev); // 初始化SHT20传感器
     tsl2584_init(tsl_dev); // 初始化TSL2584传感器
-    Camearinit(); // 初始化摄像头
+    //Camearinit(); // 初始化摄像头
     relay_init(); // 初始化继电器
     wifi_init_sta(); // 初始化WiFi
     
     // 创建各个任务
     xTaskCreatePinnedToCore(adc_task, "ADC", 4096, NULL, 5, NULL, 0); // CPU0
-    xTaskCreatePinnedToCore(camera_task, "Camera", 8192, NULL, 5, NULL, 1); // CPU1
-    xTaskCreatePinnedToCore(relay_task, "Relay", 2048, NULL, 5, NULL, 0); // CPU0
-    xTaskCreatePinnedToCore(lcd_display_task, "LCD", 8192, NULL, 5, NULL, 1); // CPU1
+    //xTaskCreatePinnedToCore(camera_task, "Camera", 8192, NULL, 5, NULL, 1); // CPU1
+    //xTaskCreatePinnedToCore(relay_task, "Relay", 2048, NULL, 5, NULL, 0); // CPU0
+    //xTaskCreatePinnedToCore(lcd_display_task, "LCD", 8192, NULL, 5, NULL, 1); // CPU1
 
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));

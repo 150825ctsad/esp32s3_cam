@@ -156,7 +156,7 @@ void Camera_app(void)
         .indata = fb->buf,                     // 输入 JPEG 数据
         .indata_size = fb->len,                // 输入数据大小
         .out_format = JPEG_IMAGE_FORMAT_RGB565, // 输出格式为 RGB565
-        .out_scale = JPEG_IMAGE_SCALE_0,       // 不缩放
+        .out_scale = JPEG_IMAGE_SCALE_0,       // 缩放
         .flags.swap_color_bytes = 1,           // 不交换颜色字节
         .advanced.working_buffer = NULL,       // 让库自动分配工作缓冲区
         .advanced.working_buffer_size = 0      // 自动计算工作缓冲区大小

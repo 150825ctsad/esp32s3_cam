@@ -16,7 +16,7 @@
     "--compile-commands-dir=${workspaceFolder}\\build"
   ],
   "idf.flashType": "UART",
-  "idf.portWin": "COM10",
+  "idf.portWin": "COM13",
   "files.associations": {
     "adc_cali.h": "c",
     "gpio.h": "c",
@@ -39,7 +39,18 @@
     "cjson.h": "c",
     "mqtt_set.h": "c",
     "esp_camera.h": "c",
-    "esp_http_server.h": "c"
+    "esp_http_server.h": "c",
+    "ov2640.h": "c",
+    "array": "c",
+    "charconv": "c",
+    "complex": "c",
+    "functional": "c",
+    "ratio": "c",
+    "tuple": "c",
+    "type_traits": "c",
+    "utility": "c",
+    "variant": "c",
+    "task.h": "c"
   },
   "trae.tab.enableRename": false,
   "trae.tab.enableAutoImport": false
