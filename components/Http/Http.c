@@ -13,34 +13,51 @@ static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %
 static const char* TAG = "HTTP_SERVER";
 static httpd_handle_t server = NULL;
 
-/**
- * @brief HTTP服务器处理函数：提供MJPEG视频流
- */
 static esp_err_t jpg_stream_handler(httpd_req_t *req)
 {
     extern camera_fb_t *picture_data;
     esp_err_t res = ESP_OK;
-    if (!picture_data) {
-        ESP_LOGE(TAG, "No camera frame available");
-        httpd_resp_send_404(req);
-        return ESP_FAIL;
+    size_t _jpg_buf_len = 0;
+    uint8_t *_jpg_buf = NULL;
+    char part_buf[64];
+
+    static int64_t last_frame = 0;
+    if (!last_frame) {
+        last_frame = esp_timer_get_time();
     }
-    if (picture_data->format != PIXFORMAT_JPEG) {
-        ESP_LOGE(TAG, "Frame is not JPEG format");
-        httpd_resp_send_404(req);
-        return ESP_FAIL;
-    }
-    res = httpd_resp_set_type(req, "image/jpeg");
+
+    res = httpd_resp_set_type(req, _STREAM_CONTENT_TYPE);
     if (res != ESP_OK) {
         return res;
     }
-    res = httpd_resp_send(req, (const char *)picture_data->buf, picture_data->len);
+
+    while (true) {
+        if (!picture_data) {
+            ESP_LOGE(TAG, "No camera frame available");
+            continue;
+        }
+        if (picture_data->format != PIXFORMAT_JPEG) {
+            ESP_LOGE(TAG, "Frame is not JPEG format");
+            continue;
+        }
+        _jpg_buf_len = picture_data->len;
+        _jpg_buf = picture_data->buf;
+        
+    res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
+    if (res != ESP_OK) break;
+    size_t hlen = snprintf(part_buf, sizeof(part_buf), _STREAM_PART, _jpg_buf_len);
+    res = httpd_resp_send_chunk(req, part_buf, hlen);
+    if (res != ESP_OK) break;
+    res = httpd_resp_send_chunk(req, (const char *)_jpg_buf, _jpg_buf_len);
+    if (res != ESP_OK) break;
+  
+    }
+
+    last_frame = 0;
     return res;
 }
 
-/**
- * @brief HTTP服务器处理函数：提供简单的HTML页面
- */
+
 static esp_err_t index_handler(httpd_req_t *req)
 {
     const char* index_html = 
@@ -48,10 +65,17 @@ static esp_err_t index_handler(httpd_req_t *req)
         "<html>\n"
         "<head>\n"
         "    <title>ESP32-CAM Stream</title>\n"
+        "    <script>\n"
+        "    function refreshImg() {\n"
+        "        var img = document.getElementById('cam');\n"
+        "        img.src = '/stream?' + new Date().getTime();\n"
+        "    }\n"
+        "    setInterval(refreshImg, 100);\n"
+        "    </script>\n"
         "</head>\n"
         "<body>\n"
         "    <h1>ESP32-CAM Video Stream</h1>\n"
-        "    <img src='/stream' />\n"
+        "    <img id='cam' src='/stream' />\n"
         "</body>\n"
         "</html>\n";
     
@@ -59,9 +83,7 @@ static esp_err_t index_handler(httpd_req_t *req)
     return httpd_resp_send(req, index_html, strlen(index_html));
 }
 
-/**
- * @brief 初始化HTTP服务器
- */
+
 esp_err_t http_server_init(void)
 {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -94,9 +116,7 @@ esp_err_t http_server_init(void)
     return ESP_FAIL;
 }
 
-/**
- * @brief 停止HTTP服务器
- */
+
 void http_server_stop(void)
 {
     if (server) {
@@ -105,9 +125,7 @@ void http_server_stop(void)
     }
 }
 
-/**
- * @brief 启动HTTP视频流服务器（供WIFI_Set调用）
- */
+
 void start_http_stream_server(void)
 {
     http_server_init();

@@ -29,7 +29,7 @@ void adc_task(void *pvParameters) {
 void camera_task(void *pvParameters) {
     while (1) {
         Camera_app(); // 处理摄像头相关功能
-        //vTaskDelay(pdMS_TO_TICKS(33));
+        vTaskDelay(pdMS_TO_TICKS(33));
     }
 }
 
