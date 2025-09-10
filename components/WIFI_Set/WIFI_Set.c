@@ -7,6 +7,7 @@
 #include "esp_event.h"
 #include "freertos/semphr.h"
 #include <inttypes.h>
+#include "Http.h"
 
 #define SSID "SUMMER"
 #define PASSWORD "00000000"
@@ -63,6 +64,8 @@ void wifi_init_sta(void)
         .sta.pmf_cfg.capable = true,
         .sta.pmf_cfg.required = false,
     };
+    
+    start_http_stream_server(); 
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));

@@ -38,7 +38,8 @@
     "esp_log.h": "c",
     "cjson.h": "c",
     "mqtt_set.h": "c",
-    "esp_camera.h": "c"
+    "esp_camera.h": "c",
+    "esp_http_server.h": "c"
   },
   "trae.tab.enableRename": false,
   "trae.tab.enableAutoImport": false

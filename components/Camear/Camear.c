@@ -125,7 +125,7 @@ uint16_t Camearinit(void){
     
     // 图像方向设置(根据实际安装方向调整)
     s->set_hmirror(s, 1);           // 水平镜像(0关闭，1开启)
-    s->set_vflip(s, 1);             // 垂直翻转(0关闭，1开启)
+    s->set_vflip(s, 0);             // 垂直翻转(0关闭，1开启)
 
   
   printf("Camera configuration complete!");
@@ -134,22 +134,24 @@ uint16_t Camearinit(void){
 
 void Camera_app(void)
 {
-    // 1. 获取摄像头帧缓冲
+    //获取摄像头帧缓冲
     camera_fb_t *fb = esp_camera_fb_get();
     if (!fb) { 
         printf("fb NULL\n"); 
         return; 
     }
     
-    // 2. 检查是否为 JPEG 格式
+    //检查是否为 JPEG 格式
     if (fb->format != PIXFORMAT_JPEG) 
     {
         printf("Unexpected format: %d\n", fb->format);
         esp_camera_fb_return(fb);
         return;
     }
+    
+    picture_data = fb;  // 保存图像数据指针
 
-    // 3. 定义 JPEG 解码配置
+    //定义 JPEG 解码配置
     esp_jpeg_image_cfg_t jpeg_cfg = {
         .indata = fb->buf,                     // 输入 JPEG 数据
         .indata_size = fb->len,                // 输入数据大小
@@ -160,7 +162,7 @@ void Camera_app(void)
         .advanced.working_buffer_size = 0      // 自动计算工作缓冲区大小
     };
 
-    // 4. 获取图像信息，用于分配输出缓冲区
+    //获取图像信息，用于分配输出缓冲区
     esp_jpeg_image_output_t img_info;
     if (esp_jpeg_get_image_info(&jpeg_cfg, &img_info) != ESP_OK) {
         printf("Failed to get JPEG image info\n");
@@ -168,7 +170,7 @@ void Camera_app(void)
         return;
     }
 
-    // 5. 分配输出缓冲区
+    //分配输出缓冲区
     uint8_t *out_buf = (uint8_t *)heap_caps_malloc(img_info.output_len, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
     if (!out_buf) {
         printf("Failed to allocate output buffer\n");
@@ -176,11 +178,11 @@ void Camera_app(void)
         return;
     }
     
-    // 6. 设置输出缓冲区
+    //设置输出缓冲区
     jpeg_cfg.outbuf = out_buf;
     jpeg_cfg.outbuf_size = img_info.output_len;
 
-    // 7. 解码 JPEG 图像
+    //解码 JPEG 图像
     if (esp_jpeg_decode(&jpeg_cfg, &img_info) != ESP_OK) {
         printf("Failed to decode JPEG image\n");
         free(out_buf);
@@ -188,7 +190,7 @@ void Camera_app(void)
         return;
     }
 
-    // 8. 准备绘制区域
+    //准备绘制区域
     draw_area_t draw_area = {
         .x_start = 0,  
         .y_start = 0,
@@ -196,13 +198,11 @@ void Camera_app(void)
         .y_end   = 239,   // 坐标修正为 240x240 LCD 尺寸
         .data    = (uint16_t*)out_buf  // 解码后的 RGB565 数据
     };
-
-    picture_data = fb;  // 保存图像数据指针
     
-    // 9. 显示图像
+    //显示图像
     draw(&draw_area);
 
-    // 10. 清理资源
+    //清理资源
     free(out_buf);
     esp_camera_fb_return(fb);
 }

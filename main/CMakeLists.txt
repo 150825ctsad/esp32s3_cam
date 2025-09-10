@@ -4,6 +4,7 @@ idf_component_register(SRCS "main.c"
                                  "../components/SHT20"
                                  "../components/Camear"
                                  "../components/JDQ"
+                                 "../components/Http"
                     REQUIRES esp_lcd 
                              driver 
                              peripherals 
@@ -15,4 +16,5 @@ idf_component_register(SRCS "main.c"
                              TSL2584
                              I2C
                              WIFI_Set
+                             Http
                     )

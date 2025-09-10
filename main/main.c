@@ -12,8 +12,8 @@
 #include "TSL2584.h"
 #include "I2C.h"
 #include "WIFI_Set.h"
-// 声明全局变量
 
+// 声明全局变量
 
 
 // ADC任务函数
@@ -29,6 +29,7 @@ void adc_task(void *pvParameters) {
 void camera_task(void *pvParameters) {
     while (1) {
         Camera_app(); // 处理摄像头相关功能
+        //vTaskDelay(pdMS_TO_TICKS(33));
     }
 }
 
@@ -78,7 +79,7 @@ void app_main(void) {
     xTaskCreatePinnedToCore(camera_task, "Camera", 8192, NULL, 5, NULL, 1); // CPU1
     xTaskCreatePinnedToCore(relay_task, "Relay", 2048, NULL, 5, NULL, 0); // CPU0
     xTaskCreatePinnedToCore(lcd_display_task, "LCD", 8192, NULL, 5, NULL, 1); // CPU1
-    
+
     while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
