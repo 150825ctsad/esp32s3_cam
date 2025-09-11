@@ -70,11 +70,10 @@ static esp_err_t index_handler(httpd_req_t *req)
         "        var img = document.getElementById('cam');\n"
         "        img.src = '/stream?' + new Date().getTime();\n"
         "    }\n"
-        "    setInterval(refreshImg, 100);\n"
+        "    setInterval(refreshImg, 200);\n"
         "    </script>\n"
         "</head>\n"
         "<body>\n"
-        "    <h1>ESP32-CAM Video Stream</h1>\n"
         "    <img id='cam' src='/stream' />\n"
         "</body>\n"
         "</html>\n";

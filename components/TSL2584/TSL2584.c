@@ -5,6 +5,8 @@
 #include "freertos/FreeRTOS.h"
 #define TSL_I2C_ADDR  0x39
 
+float light_DATA = 0;
+
 /* === 1. 一次性常量，放 .rodata，不占栈 === */
 static const uint8_t CMD_ENABLE[]   = {0x80 | 0x00, 0x03}; // PON | AEN
 static const uint8_t CMD_ATIME[]    = {0x80 | 0x01, 0xD5}; // 101 ms
@@ -62,6 +64,7 @@ int tsl2584_read_lux_x100(void)
        ATIME = 101 ms ≈ 100, GAIN = 16 → 分母 1600
        放大 100 倍后返回整数，无浮点 */
     int lux100 = ((int32_t)ch0 - ch1) * 40800L / 1600;
+    light_DATA = lux100;
     return lux100 < 0 ? 0 : lux100;
 }
 

@@ -76,7 +76,7 @@ void app_main(void) {
     // 创建各个任务
     xTaskCreatePinnedToCore(adc_task, "ADC", 4096, NULL, 5, NULL, 0); // CPU0
     xTaskCreatePinnedToCore(camera_task, "Camera", 8192, NULL, 5, NULL, 1); // CPU1
-    xTaskCreatePinnedToCore(relay_task, "Relay", 2048, NULL, 5, NULL, 0); // CPU0
+    //xTaskCreatePinnedToCore(relay_task, "Relay", 2048, NULL, 5, NULL, 0); // CPU0
     xTaskCreatePinnedToCore(lcd_display_task, "LCD", 8192, NULL, 5, NULL, 1); // CPU1
 
     while (1) {

@@ -9,6 +9,7 @@
 #define ADC_ATTEN           ADC_ATTEN_DB_12
 #define ADC_WIDTH           ADC_BITWIDTH_12
 
+uint16_t adc_DATA = 0;
 /* 1. 句柄放全局，任务里直接读 */
 static adc_oneshot_unit_handle_t  adc_hdl;
 static adc_cali_handle_t          cal_hdl;
@@ -54,5 +55,6 @@ int TEST_ADC_GetVoltage_mv(void)
     int raw, mv;
     adc_oneshot_read(adc_hdl, ADC_CHAN, &raw);
     adc_cali_raw_to_voltage(cal_hdl, raw, &mv);
+    adc_DATA = mv;
     return mv;          // 直接返回 mV，避免 double
 }

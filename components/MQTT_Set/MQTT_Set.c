@@ -6,18 +6,20 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "SHT20.h"
+#include "TSL2584.h"
+#include "MAX471.h"
 #include "Camear.h"
 #include "JDQ.h"
 #include "mbedtls/base64.h"
 #define TAG                    "MQTT_CLIENT"
-#define MQTT_BROKER_URI        "mqtt://8.134.185.186"
+#define MQTT_BROKER_URI        "mqtt://192.168.31.88"
 #define MQTT_BROKER_PORT       1883
 #define MQTT_CLIENT_ID         "esp32s3"
 #define MQTT_USERNAME          "esp32s3"
 #define MQTT_PASSWORD          ""
-#define MQTT_TOPIC_SENSOR      "test/ESP-IDF/SENSOR_DATA"
-#define MQTT_TOPIC_COMMAND     "test/ESP-IDF/COMMAND"
-#define MQTT_TOPIC_CAM         "test/ESP-IDF/CAM"
+#define MQTT_TOPIC_SENSOR      "/device/SENSOR_DATA"
+#define MQTT_TOPIC_COMMAND     "COMMAND"
+#define MQTT_TOPIC_CAM         "/device/CAM"
 static esp_mqtt_client_handle_t mqtt_client = NULL;
 static bool mqtt_connected = false;
 static int reconnect_attempts = 0;
@@ -149,12 +151,12 @@ static void publish_sensor_data(void)
     static char json[256];
     int len = snprintf(json, sizeof(json),
         "{\"timestamp\":%lu,\"temp\":%.2f,\"humi\":%.2f,"
-        "\"light\":%.1f,\"adc\":%d,\"device\":\"%s\",\"fw\":\"1.0.0\"}",
+        "\"light\":%.2f,\"adc\":%d,\"device\":\"%s\",\"fw\":\"1.0.0\"}",
         (unsigned long)(xTaskGetTickCount() * portTICK_PERIOD_MS),
-        temp, humi, 450.8f, 1024, MQTT_CLIENT_ID);
+        temp, humi, light_DATA, adc_DATA, MQTT_CLIENT_ID);
 
     if (len > 0 && len < sizeof(json)) {
-        int msg_id = esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_SENSOR, json, 0, 0, 0);
+        int msg_id = esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_SENSOR, json, 0, 1, 0);
         if (msg_id < 0) 
         {
             ESP_LOGE(TAG, "Publish failed: %d", msg_id);
@@ -180,7 +182,7 @@ static void publish_sensor_data(void)
                 if (result == 0) { // 编码成功
                     // 发布base64编码后的图像数据
                     int msg_cam = esp_mqtt_client_publish(mqtt_client, MQTT_TOPIC_CAM, 
-                                                         (const char *)base64_buf, out_len, 0, 0);
+                                                         (const char *)base64_buf, out_len, 1, 0);
                     
                     if (msg_cam < 0) {
                         ESP_LOGE(TAG, "Camera publish failed: %d", msg_cam);

@@ -13,4 +13,5 @@ void tsl2584_app(i2c_master_dev_handle_t i2c_dev);
 int tsl2584_read_lux_x100(void);
 
 extern i2c_master_dev_handle_t tsl_dev;
+extern float light_DATA;
 #endif // TSL2584_H
