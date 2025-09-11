@@ -38,7 +38,6 @@ void relay_task(void *pvParameters) {
     while (1) {
         relay_on(); // 打开继电器
         vTaskDelay(pdMS_TO_TICKS(5000)); // 每秒执行一次
-        // 如果需要关闭继电器，可以添加 relay_off() 和相应的延迟
     }
 }
 
